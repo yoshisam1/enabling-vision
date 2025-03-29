@@ -2,6 +2,7 @@ from enum import Enum
 from moves import Move
 
 class CharacterClass(Enum):
+    #hi
     KNIGHT = {
         "health": 100,
         "defense": 15,
@@ -43,17 +44,42 @@ class CharacterClass(Enum):
     }
 
 class Character:
-    def __init__(self, name, character_class: CharacterClass):
-        self.name = name
-        self.character_class = character_class
-        # Set stats based on character class
-        self.health = character_class.value["health"]
-        self.max_health = character_class.value["health"]
-        self.defense = character_class.value["defense"]
-        self.attack = character_class.value["attack"]
+    def __init__(self, player_name: str):
+        self.name = player_name
+        self.character_class = None
+        self.health = 0
+        self.max_health = 0
+        self.defense = 0
+        self.attack = 0
         self.is_alive = True
-        self.moves = character_class.value["moves"].copy()
+        self.moves = []
         self.last_damage_taken = 0
+
+    def select_character_class(self):
+        print("\nChoose your character class:")
+        print("1. Knight - Moderate health, high defense, low attack")
+        print("2. Wizard - High health, low defense, moderate attack")
+        print("3. Archer - Low health, moderate defense, high attack")
+        
+        while True:
+            choice = input("\nEnter your choice (1-3): ")
+            if choice == "1":
+                self.character_class = CharacterClass.KNIGHT
+            elif choice == "2":
+                self.character_class = CharacterClass.WIZARD
+            elif choice == "3":
+                self.character_class = CharacterClass.ARCHER
+            else:
+                print("Invalid choice. Please try again.")
+                continue
+            
+            # Initialize character stats based on chosen class
+            self.health = self.character_class.value["health"]
+            self.max_health = self.character_class.value["health"]
+            self.defense = self.character_class.value["defense"]
+            self.attack = self.character_class.value["attack"]
+            self.moves = self.character_class.value["moves"].copy()
+            break
 
     def take_damage(self, damage):
         """Reduce character's health by the specified damage amount"""
@@ -86,4 +112,4 @@ class Character:
         moves_str = "\nMoves:"
         for i, move in enumerate(self.moves):
             moves_str += f"\n{i+1}. {move}"
-        return f"{self.name} ({self.character_class.name}) - Health: {self.health}/{self.max_health}, Attack: {self.attack}, Defense: {self.defense}{moves_str}" 
+        return f"{self.character_class.name} - Health: {self.health}/{self.max_health}, Attack: {self.attack}, Defense: {self.defense}{moves_str}" 

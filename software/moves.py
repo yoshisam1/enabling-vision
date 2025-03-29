@@ -2,6 +2,7 @@ from enum import Enum
 import random
 
 class Move:
+    #hi 
     class MoveType(Enum):
         FIRE = "Fire"
         EARTH = "Earth"
