@@ -25,6 +25,7 @@ class Game:
         self.battle()
         exit()
 
+    # Need to check other class to ask for input through hardware
     def setup_players(self):
         # Player 1 setup
         print("\nPlayer 1 setup:")
@@ -71,19 +72,27 @@ class Game:
         
         print(self.state.narrator.show_available_moves(available_moves))
         
-        # Get move choice
-        while True:
-            try:
-                choice = int(input(self.state.narrator.request_move_choice()))
-                if 1 <= choice <= len(available_moves):
-                    move_index = player.moves.index(available_moves[choice-1])
-                    success, message = player.use_move(move_index, opponent)
-                    print(message)
-                    return
-                else:
-                    print(self.state.narrator.invalid_choice())
-            except ValueError:
-                print(self.state.narrator.invalid_number())
+        # Determine which player is active
+        player_id = 1 if player == self.state.player1 else 2
+        
+        # Get move choice using hardware_command_listener
+        print(self.state.narrator.request_move_choice())
+        move_selected = False
+        
+        while not move_selected:
+            # Request button press from the hardware
+            button = self.hardware_command_listener.on_command("check_button", player_id=player_id)
+            
+            # If a button was pressed and it's valid
+            if button is not None and 1 <= button <= len(available_moves):
+                # Select the corresponding move
+                move_index = player.moves.index(available_moves[button-1])
+                success, message = player.use_move(move_index, opponent)
+                print(message)
+                move_selected = True
+            elif button is not None:
+                # Button press was invalid
+                print(self.state.narrator.invalid_choice())
 
     def play_victory_sound(self):
         self.hardware_command_listener.on_command("play_audio", file_path="victory.mp3")
