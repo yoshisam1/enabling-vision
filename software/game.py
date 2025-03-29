@@ -1,5 +1,6 @@
 from enum import Enum
 from character import Character, CharacterClass
+from narrator import Narrator
 
 class GameState:
     class Turn(Enum):
@@ -12,12 +13,15 @@ class GameState:
         self.turn = self.Turn.NARRATOR
         self.player1 = None  # Will hold Character object
         self.player2 = None  # Will hold Character object
-        self.narrator = None   # For future narrator implementation
+        self.narrator = Narrator()   # For future narrator implementation
 
 class Game:
     def __init__(self):
         print("Welcome to the Battle Game!")
         self.state = GameState()
+        self.run()
+
+    def run(self):
         self.setup_players()
         self.battle()
         exit()
@@ -57,31 +61,52 @@ class Game:
         print(f"\nBattle ended! {winner.name} is victorious!")
 
     def player_turn(self, player, opponent):
-        print(f"\n{player.name}'s turn!")
+        print(self.state.narrator.announce_turn(player.name))
         print(player)
         
+        # Show available moves
         available_moves = player.get_available_moves()
         if not available_moves:
-            print("No moves available!")
+            print(self.state.narrator.announce_no_moves())
             return
         
-        print("\nAvailable moves:")
-        for i, move in enumerate(available_moves):
-            print(f"{i+1}. {move.name} - {move.effect_description}")
+        print(self.state.narrator.show_available_moves(available_moves))
         
+        # Get move choice
         while True:
             try:
-                choice = int(input("\nChoose a move (enter the number): "))
+                choice = int(input(self.state.narrator.request_move_choice()))
                 if 1 <= choice <= len(available_moves):
                     move_index = player.moves.index(available_moves[choice-1])
                     success, message = player.use_move(move_index, opponent)
                     print(message)
                     return
                 else:
-                    print("Invalid choice. Please try again.")
+                    print(self.state.narrator.invalid_choice())
             except ValueError:
-                print("Please enter a number.")
+                print(self.state.narrator.invalid_number())
+
+    def battle(self):
+        print("\nBattle begins!")
+        
+        while self.state.player1.is_alive and self.state.player2.is_alive:
+            if self.state.turn == GameState.Turn.PLAYER_1:
+                self.player_turn(self.state.player1, self.state.player2)
+                self.state.turn = GameState.Turn.PLAYER_2
+                
+            elif self.state.turn == GameState.Turn.PLAYER_2:
+                self.player_turn(self.state.player2, self.state.player1)
+                self.state.turn = GameState.Turn.NARRATOR
+                
+            elif self.state.turn == GameState.Turn.NARRATOR:
+                print("\nNarrator's Turn!")
+                self.state.round += 1
+                print(f"Round {self.state.round} completed!")
+                self.state.turn = GameState.Turn.PLAYER_1
+        
+        # Battle ended
+        winner = self.state.player1 if self.state.player1.is_alive else self.state.player2
+        print(f"\nBattle ended! {winner.name} is victorious!")
 
 if __name__ == "__main__":
     game = Game()
-    game.run()
