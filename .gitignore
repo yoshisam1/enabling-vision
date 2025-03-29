@@ -23,3 +23,5 @@ env/
 # Virtual environment
 enabling-vision/
 .venv/ 
+
+/public
