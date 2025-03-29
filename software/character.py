@@ -73,13 +73,16 @@ class Character:
                 print("Invalid choice. Please try again.")
                 continue
             
+            self.initialize_character()
+            break
+
+    def initialize_character(self):
             # Initialize character stats based on chosen class
             self.health = self.character_class.value["health"]
             self.max_health = self.character_class.value["health"]
             self.defense = self.character_class.value["defense"]
             self.attack = self.character_class.value["attack"]
             self.moves = self.character_class.value["moves"].copy()
-            break
 
     def take_damage(self, damage):
         """Reduce character's health by the specified damage amount"""
