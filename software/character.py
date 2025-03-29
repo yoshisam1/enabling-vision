@@ -54,6 +54,7 @@ class Character:
         self.is_alive = True
         self.moves = character_class.value["moves"].copy()
         self.last_damage_taken = 0
+        self.last_element_used = None  # Track the last element type used
 
     def take_damage(self, damage):
         """Reduce character's health by the specified damage amount"""

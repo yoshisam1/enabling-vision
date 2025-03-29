@@ -17,6 +17,20 @@ class Move:
         }
         return type_map.get(type_str.upper())
     
+    @staticmethod
+    def is_super_effective(attacker_element, defender_last_element):
+        """Check if the attack is super effective based on elemental advantages"""
+        if defender_last_element is None:
+            return False
+            
+        effectiveness = {
+            Move.MoveType.FIRE: Move.MoveType.EARTH,   # Fire > Earth
+            Move.MoveType.EARTH: Move.MoveType.WATER,  # Earth > Water
+            Move.MoveType.WATER: Move.MoveType.FIRE    # Water > Fire
+        }
+        
+        return effectiveness.get(attacker_element) == defender_last_element
+
     def __init__(self, name, move_type, power, max_uses, effect_description):
         self.name = name
         # Accept either string or MoveType enum
@@ -28,33 +42,35 @@ class Move:
 
     def calculate_damage(self, attacker, defender, ignore_defense=False):
         """Calculate damage using the formula: D = ((d20 + B)/2) × (A/d)
-        where:
-        D = Damage dealt
-        d20 = Random roll (1-20)
-        B = Move-specific bonus (self.power)
-        A = Attacker's Attack Stat
-        d = Defender's Defense stat"""
+        with elemental effectiveness multiplier"""
         d20 = random.randint(1, 20)
         base = (d20 + self.power) / 2
         
+        # Check for elemental effectiveness
+        effectiveness_multiplier = 1.5 if Move.is_super_effective(self.move_type, defender.last_element_used) else 1.0
+        effectiveness_text = " (Super Effective!)" if effectiveness_multiplier > 1 else ""
+        
         if ignore_defense:
             defense_factor = 1
-            formula = f"(({d20} + {self.power})/2) × 1"  # Ignoring defense
+            formula = f"(({d20} + {self.power})/2) × 1 × {effectiveness_multiplier}"  # Ignoring defense
         else:
             # Prevent division by zero by ensuring minimum defense of 1
             defense = max(1, defender.defense)
             defense_factor = attacker.attack / defense
-            formula = f"(({d20} + {self.power})/2) × ({attacker.attack}/{defense})"
+            formula = f"(({d20} + {self.power})/2) × ({attacker.attack}/{defense}) × {effectiveness_multiplier}"
             
-        damage = int(base * defense_factor)
+        damage = int(base * defense_factor * effectiveness_multiplier)
         damage = max(1, damage)  # Ensure minimum damage of 1
-        return damage, d20, formula  # Return damage, roll, and formula
+        return damage, d20, formula + effectiveness_text  # Return damage, roll, and formula
 
     def use(self, user, target):
         if self.current_uses <= 0:
             return False, f"{self.name} has no uses left!"
         
         self.current_uses -= 1
+        
+        # Store the element type used for future effectiveness calculations
+        user.last_element_used = self.move_type
         
         # Apply move-specific effects
         if self.name == "Boulder Smash":
