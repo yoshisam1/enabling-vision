@@ -2,7 +2,6 @@ from enum import Enum
 from moves import Move
 
 class CharacterClass(Enum):
-    #hi
     KNIGHT = {
         "health": 100,
         "defense": 15,
@@ -54,6 +53,7 @@ class Character:
         self.is_alive = True
         self.moves = []
         self.last_damage_taken = 0
+        self.last_element_used = None
 
     def select_character_class(self):
         print("\nChoose your character class:")
@@ -83,9 +83,8 @@ class Character:
 
     def take_damage(self, damage):
         """Reduce character's health by the specified damage amount"""
-        actual_damage = max(1, damage - self.defense)  # Defense reduces incoming damage
-        self.health -= actual_damage
-        self.last_damage_taken = actual_damage
+        self.health -= damage
+        self.last_damage_taken = damage
         if self.health <= 0:
             self.health = 0
             self.is_alive = False
