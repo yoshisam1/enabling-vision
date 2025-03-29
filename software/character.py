@@ -1,5 +1,5 @@
 from enum import Enum
-from moves import Move
+from .moves import Move
 
 class CharacterClass(Enum):
     KNIGHT = {

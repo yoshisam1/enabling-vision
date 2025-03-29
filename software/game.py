@@ -1,7 +1,6 @@
 from enum import Enum
-from character import Character, CharacterClass
-from narrator import Narrator
-
+from .character import Character
+from .narrator import Narrator
 class GameState:
     class Turn(Enum):
         NARRATOR = "narrator"
@@ -16,10 +15,10 @@ class GameState:
         self.narrator = Narrator()   # For future narrator implementation
 
 class Game:
-    def __init__(self):
+    def __init__(self, hardware_command_listener):
         print("Welcome to the Battle Game!")
+        self.hardware_command_listener = hardware_command_listener
         self.state = GameState()
-        self.run()
 
     def run(self):
         self.setup_players()
@@ -58,7 +57,7 @@ class Game:
         
         # Battle ended
         winner = self.state.player1 if self.state.player1.is_alive else self.state.player2
-        print(f"\nBattle ended! {winner.name} is victorious!")
+        self.play_victory_sound()
 
     def player_turn(self, player, opponent):
         print(self.state.narrator.announce_turn(player.name))
@@ -86,27 +85,5 @@ class Game:
             except ValueError:
                 print(self.state.narrator.invalid_number())
 
-    def battle(self):
-        print("\nBattle begins!")
-        
-        while self.state.player1.is_alive and self.state.player2.is_alive:
-            if self.state.turn == GameState.Turn.PLAYER_1:
-                self.player_turn(self.state.player1, self.state.player2)
-                self.state.turn = GameState.Turn.PLAYER_2
-                
-            elif self.state.turn == GameState.Turn.PLAYER_2:
-                self.player_turn(self.state.player2, self.state.player1)
-                self.state.turn = GameState.Turn.NARRATOR
-                
-            elif self.state.turn == GameState.Turn.NARRATOR:
-                print("\nNarrator's Turn!")
-                self.state.round += 1
-                print(f"Round {self.state.round} completed!")
-                self.state.turn = GameState.Turn.PLAYER_1
-        
-        # Battle ended
-        winner = self.state.player1 if self.state.player1.is_alive else self.state.player2
-        print(f"\nBattle ended! {winner.name} is victorious!")
-
-if __name__ == "__main__":
-    game = Game()
+    def play_victory_sound(self):
+        self.hardware_command_listener.on_command("play_audio", file_path="victory.mp3")
