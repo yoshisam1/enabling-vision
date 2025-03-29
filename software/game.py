@@ -1,4 +1,5 @@
 from character import Character, CharacterClass
+from narrator import Narrator
 
 def select_character_class():
     print("\nChoose your character class:")
@@ -17,41 +18,39 @@ def select_character_class():
         else:
             print("Invalid choice. Please try again.")
 
-def player_turn(player, opponent):
-    print(f"\n{player.name}'s turn!")
+def player_turn(player, opponent, narrator):
+    print(narrator.announce_turn(player.name))
     print(player)
     
     # Show available moves
     available_moves = player.get_available_moves()
     if not available_moves:
-        print("No moves available!")
+        print(narrator.announce_no_moves())
         return
     
-    print("\nAvailable moves:")
-    for i, move in enumerate(available_moves):
-        print(f"{i+1}. {move.name} - {move.effect_description}")
+    print(narrator.show_available_moves(available_moves))
     
     # Get move choice
     while True:
         try:
-            choice = int(input("\nChoose a move (enter the number): "))
+            choice = int(input(narrator.request_move_choice()))
             if 1 <= choice <= len(available_moves):
                 move_index = player.moves.index(available_moves[choice-1])
                 success, message = player.use_move(move_index, opponent)
                 print(message)
                 return
             else:
-                print("Invalid choice. Please try again.")
+                print(narrator.invalid_choice())
         except ValueError:
-            print("Please enter a number.")
+            print(narrator.invalid_number())
 
-def battle(player1, player2):
+def battle(player1, player2, narrator):
     print("\nBattle begins!")
     current_player = player1
     opponent = player2
     
     while player1.is_alive and player2.is_alive:
-        player_turn(current_player, opponent)
+        player_turn(current_player, opponent, narrator)
         
         # Switch turns
         current_player, opponent = opponent, current_player
@@ -61,7 +60,7 @@ def battle(player1, player2):
     print(f"\nBattle ended! {winner.name} is victorious!")
 
 def main():
-    print("Welcome to the Battle Game!")
+    narrator = Narrator()
     
     # Player 1 setup
     print("\nPlayer 1 setup:")
@@ -76,7 +75,7 @@ def main():
     player2 = Character(name2, class2)
     
     # Start battle
-    battle(player1, player2)
+    battle(player1, player2, narrator)
 
 if __name__ == "__main__":
     main()
