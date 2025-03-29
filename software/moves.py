@@ -42,12 +42,7 @@ class Move:
 
     def calculate_damage(self, attacker, defender, ignore_defense=False):
         """Calculate damage using the formula: D = ((d20 + B)/2) × (A/d)
-        where:
-        D = Damage dealt
-        d20 = Random roll (1-20)
-        B = Move-specific bonus (self.power)
-        A = Attacker's Attack Stat
-        d = Defender's Defense stat"""
+        with elemental effectiveness multiplier"""
         d20 = random.randint(1, 20)
         base = (d20 + self.power) / 2
         

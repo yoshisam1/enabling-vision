@@ -85,6 +85,8 @@ class Character:
         """Reduce character's health by the specified damage amount"""
         self.health -= damage
         self.last_damage_taken = damage
+        self.health -= damage
+        self.last_damage_taken = damage
         if self.health <= 0:
             self.health = 0
             self.is_alive = False
