@@ -27,7 +27,7 @@ class Move:
         self.effect_description = effect_description
 
     def calculate_damage(self, attacker, defender, ignore_defense=False):
-        """Calculate damage using the formula: D = ((d20 + B)/2) × (A/d) + 2
+        """Calculate damage using the formula: D = ((d20 + B)/2) × (A/d)
         where:
         D = Damage dealt
         d20 = Random roll (1-20)
@@ -39,13 +39,16 @@ class Move:
         
         if ignore_defense:
             defense_factor = 1
+            formula = f"(({d20} + {self.power})/2) × 1"  # Ignoring defense
         else:
             # Prevent division by zero by ensuring minimum defense of 1
             defense = max(1, defender.defense)
             defense_factor = attacker.attack / defense
+            formula = f"(({d20} + {self.power})/2) × ({attacker.attack}/{defense})"
             
-        damage = int(base * defense_factor + 2)
-        return max(2, damage)  # Ensure minimum damage of 2
+        damage = int(base * defense_factor)
+        damage = max(1, damage)  # Ensure minimum damage of 1
+        return damage, d20, formula  # Return damage, roll, and formula
 
     def use(self, user, target):
         if self.current_uses <= 0:
@@ -55,142 +58,156 @@ class Move:
         
         # Apply move-specific effects
         if self.name == "Boulder Smash":
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             target.take_damage(damage)
             target.defense = max(0, target.defense - 2)
-            return True, f"{user.name} used Boulder Smash! Lowered {target.name}'s defense by 2! Dealt {damage} damage!"
+            return True, f"{user.name} used Boulder Smash! (Rolled {roll}) Lowered {target.name}'s defense by 2! Damage calculation: {formula} = {damage}!"
             
         elif self.name == "Inferno Counter":
             bonus_power = self.power + (user.last_damage_taken // 3)
             self.power = bonus_power  # Temporarily modify power for damage calculation
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             self.power = 0  # Reset power
             target.take_damage(damage)
-            return True, f"{user.name} used Inferno Counter! Dealt {damage} damage!"
+            return True, f"{user.name} used Inferno Counter! (Rolled {roll}) Damage calculation: {formula} = {damage}!"
             
         elif self.name == "Lava Strike":
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             user.attack += 2
             target.take_damage(damage)
-            return True, f"{user.name} used Lava Strike! Attack raised by 2! Dealt {damage} damage!"
+            return True, f"{user.name} used Lava Strike! (Rolled {roll}) Attack raised by 2! Damage calculation: {formula} = {damage}!"
             
         elif self.name == "Earthen Tremor":
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             target.attack = max(0, target.attack - 2)
             target.take_damage(damage)
-            return True, f"{user.name} used Earthen Tremor! Lowered {target.name}'s attack by 2! Dealt {damage} damage!"
+            return True, f"{user.name} used Earthen Tremor! (Rolled {roll}) Lowered {target.name}'s attack by 2! Damage calculation: {formula} = {damage}!"
             
         elif self.name == "Magma Punch":
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             target.take_damage(damage)
             heal_amount = damage // 4
             user.heal(heal_amount)
-            return True, f"{user.name} used Magma Punch! Dealt {damage} damage and healed {heal_amount}!"
+            return True, f"{user.name} used Magma Punch! (Rolled {roll}) Damage calculation: {formula} = {damage}! Healed {heal_amount}!"
             
         elif self.name == "Rock Breaker":
             if target.defense > 10:
                 self.power += 5  # Temporarily increase power
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             if target.defense > 10:
                 self.power -= 5  # Reset power
             target.take_damage(damage)
-            return True, f"{user.name} used Rock Breaker! Dealt {damage} damage!"
+            return True, f"{user.name} used Rock Breaker! (Rolled {roll}) Damage calculation: {formula} = {damage}!"
 
         # Wizard moves
         elif self.name == "Flame Surge":
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             user.attack += 2
             target.take_damage(damage)
-            return True, f"{user.name} used Flame Surge! Attack raised by 2! Dealt {damage} damage!"
+            return True, f"{user.name} used Flame Surge! (Rolled {roll}) Attack raised by 2! Damage calculation: {formula} = {damage}!"
             
         elif self.name == "Hydro Blast":
             if user.health > 100:
                 self.power += 5  # Temporarily increase power
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             if user.health > 100:
                 self.power -= 5  # Reset power
             target.take_damage(damage)
-            return True, f"{user.name} used Hydro Blast! Dealt {damage} damage!"
+            return True, f"{user.name} used Hydro Blast! (Rolled {roll}) Damage calculation: {formula} = {damage}!"
             
         elif self.name == "Ember Wave":
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             target.take_damage(damage)
             heal_amount = damage // 4
             user.heal(heal_amount)
-            return True, f"{user.name} used Ember Wave! Dealt {damage} damage and healed {heal_amount}!"
+            return True, f"{user.name} used Ember Wave! (Rolled {roll}) Damage calculation: {formula} = {damage}! Healed {heal_amount}!"
             
         elif self.name == "Steam Burst":
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             target.attack = max(0, target.attack - 2)
             target.take_damage(damage)
-            return True, f"{user.name} used Steam Burst! Lowered {target.name}'s attack by 2! Dealt {damage} damage!"
+            return True, f"{user.name} used Steam Burst! (Rolled {roll}) Lowered {target.name}'s attack by 2! Damage calculation: {formula} = {damage}!"
             
         elif self.name == "Volcanic Surge":
             if user.health < user.max_health // 2:
                 # Roll twice and take the higher number
-                damage1 = self.calculate_damage(user, target)
-                damage2 = self.calculate_damage(user, target)
-                damage = max(damage1, damage2)
+                damage1, roll1, formula1 = self.calculate_damage(user, target)
+                damage2, roll2, formula2 = self.calculate_damage(user, target)
+                if damage1 > damage2:
+                    damage, roll, formula = damage1, roll1, formula1
+                else:
+                    damage, roll, formula = damage2, roll2, formula2
+                return True, f"{user.name} used Volcanic Surge! (Rolled {roll1} and {roll2}, took higher) Damage calculation: {formula} = {damage}!"
             else:
-                damage = self.calculate_damage(user, target)
-            target.take_damage(damage)
-            return True, f"{user.name} used Volcanic Surge! Dealt {damage} damage!"
+                damage, roll, formula = self.calculate_damage(user, target)
+                target.take_damage(damage)
+                return True, f"{user.name} used Volcanic Surge! (Rolled {roll}) Damage calculation: {formula} = {damage}!"
             
         elif self.name == "Tidal Crash":
             missing_hp = user.max_health - user.health
             self.power += missing_hp // 10  # Add bonus damage based on missing HP
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             self.power -= missing_hp // 10  # Reset power
             target.take_damage(damage)
-            return True, f"{user.name} used Tidal Crash! Dealt {damage} damage!"
+            return True, f"{user.name} used Tidal Crash! (Rolled {roll}) Damage calculation: {formula} = {damage}!"
 
         # Archer moves
         elif self.name == "Flame Arrow":
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             target.take_damage(damage)
             user.attack = min(user.attack + 1, user.attack + 3)  # Stack up to +3
-            return True, f"{user.name} used Flame Arrow! Attack raised by 1! Dealt {damage} damage!"
+            return True, f"{user.name} used Flame Arrow! (Rolled {roll}) Attack raised by 1! Damage calculation: {formula} = {damage}!"
             
         elif self.name == "Piercing Shot":
-            damage = self.calculate_damage(user, target, ignore_defense=True)  # Ignores defense
+            damage, roll, formula = self.calculate_damage(user, target, ignore_defense=True)  # Ignores defense
             target.take_damage(damage)
             target.defense = max(0, target.defense - 2)
-            return True, f"{user.name} used Piercing Shot! Lowered {target.name}'s defense by 2! Dealt {damage} damage!"
+            return True, f"{user.name} used Piercing Shot! (Rolled {roll}) Lowered {target.name}'s defense by 2! Damage calculation: {formula} = {damage}!"
             
         elif self.name == "Searing Volley":
             # Hit twice with half damage each time
-            damage1 = self.calculate_damage(user, target) // 2
-            damage2 = self.calculate_damage(user, target) // 2
+            damage1, roll1, formula1 = self.calculate_damage(user, target)
+            damage2, roll2, formula2 = self.calculate_damage(user, target)
+            damage1 = damage1 // 2
+            damage2 = damage2 // 2
             total_damage = damage1 + damage2
             target.take_damage(total_damage)
             user.attack += 2
-            return True, f"{user.name} used Searing Volley! Attack raised by 2! Dealt {total_damage} damage!"
+            return True, f"{user.name} used Searing Volley! (Rolled {roll1} and {roll2}) Attack raised by 2! Damage calculations: {formula1} = {damage1*2}, {formula2} = {damage2*2}, Total = {total_damage}!"
             
         elif self.name == "Rock Barrage":
             hits = random.randint(2, 5)
             total_damage = 0
+            rolls = []
+            formulas = []
+            damages = []
             for _ in range(hits):
-                damage = self.calculate_damage(user, target) // 2  # Half damage per hit
+                damage, roll, formula = self.calculate_damage(user, target)
+                damage = damage // 2  # Half damage per hit
                 total_damage += damage
+                rolls.append(roll)
+                formulas.append(formula)
+                damages.append(damage)
             target.take_damage(total_damage)
             target.defense = max(0, target.defense - hits)  # Lower defense by 1 per hit
-            return True, f"{user.name} used Rock Barrage! Hit {hits} times! Lowered {target.name}'s defense by {hits}! Dealt {total_damage} damage!"
+            damage_calcs = [f"Hit {i+1}: {formulas[i]} = {damages[i]}" for i in range(hits)]
+            return True, f"{user.name} used Rock Barrage! (Rolled {', '.join(map(str, rolls))}) Hit {hits} times! Lowered {target.name}'s defense by {hits}! Damage calculations: {', '.join(damage_calcs)}, Total = {total_damage}!"
             
         elif self.name == "Explosive Shot":
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             target.take_damage(damage)
             recoil = damage // 3
             user.take_damage(recoil)
-            return True, f"{user.name} used Explosive Shot! Dealt {damage} damage and took {recoil} recoil damage!"
+            return True, f"{user.name} used Explosive Shot! (Rolled {roll}) Damage calculation: {formula} = {damage}! Took {recoil} recoil damage!"
             
         elif self.name == "Sharpened Quake":
             if target.health < target.max_health // 2:
                 self.power += 5  # Add bonus damage against low HP targets
-            damage = self.calculate_damage(user, target)
+            damage, roll, formula = self.calculate_damage(user, target)
             if target.health < target.max_health // 2:
                 self.power -= 5  # Reset power
             target.take_damage(damage)
-            return True, f"{user.name} used Sharpened Quake! Dealt {damage} damage!"
+            return True, f"{user.name} used Sharpened Quake! (Rolled {roll}) Damage calculation: {formula} = {damage}!"
             
         return False, "Move failed!"
 
