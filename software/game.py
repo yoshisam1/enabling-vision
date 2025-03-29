@@ -1,7 +1,6 @@
 from enum import Enum
-from character import Character, CharacterClass
-from narrator import Narrator
-
+from .character import Character
+from .narrator import Narrator
 class GameState:
     class Turn(Enum):
         NARRATOR = "narrator"
@@ -16,16 +15,17 @@ class GameState:
         self.narrator = Narrator()   # For future narrator implementation
 
 class Game:
-    def __init__(self):
+    def __init__(self, hardware_command_listener):
         print("Welcome to the Battle Game!")
+        self.hardware_command_listener = hardware_command_listener
         self.state = GameState()
-        self.run()
 
     def run(self):
         self.setup_players()
         self.battle()
         exit()
 
+    # Need to check other class to ask for input through hardware
     def setup_players(self):
         # Player 1 setup
         print("\nPlayer 1 setup:")
@@ -58,7 +58,7 @@ class Game:
         
         # Battle ended
         winner = self.state.player1 if self.state.player1.is_alive else self.state.player2
-        print(f"\nBattle ended! {winner.name} is victorious!")
+        self.play_victory_sound()
 
     def player_turn(self, player, opponent):
         print(self.state.narrator.announce_turn(player.name))
@@ -72,41 +72,27 @@ class Game:
         
         print(self.state.narrator.show_available_moves(available_moves))
         
-        # Get move choice
-        while True:
-            try:
-                choice = int(input(self.state.narrator.request_move_choice()))
-                if 1 <= choice <= len(available_moves):
-                    move_index = player.moves.index(available_moves[choice-1])
-                    success, message = player.use_move(move_index, opponent)
-                    print(message)
-                    return
-                else:
-                    print(self.state.narrator.invalid_choice())
-            except ValueError:
-                print(self.state.narrator.invalid_number())
-
-    def battle(self):
-        print("\nBattle begins!")
+        # Determine which player is active
+        player_id = 1 if player == self.state.player1 else 2
         
-        while self.state.player1.is_alive and self.state.player2.is_alive:
-            if self.state.turn == GameState.Turn.PLAYER_1:
-                self.player_turn(self.state.player1, self.state.player2)
-                self.state.turn = GameState.Turn.PLAYER_2
-                
-            elif self.state.turn == GameState.Turn.PLAYER_2:
-                self.player_turn(self.state.player2, self.state.player1)
-                self.state.turn = GameState.Turn.NARRATOR
-                
-            elif self.state.turn == GameState.Turn.NARRATOR:
-                print("\nNarrator's Turn!")
-                self.state.round += 1
-                print(f"Round {self.state.round} completed!")
-                self.state.turn = GameState.Turn.PLAYER_1
+        # Get move choice using hardware_command_listener
+        print(self.state.narrator.request_move_choice())
+        move_selected = False
         
-        # Battle ended
-        winner = self.state.player1 if self.state.player1.is_alive else self.state.player2
-        print(f"\nBattle ended! {winner.name} is victorious!")
+        while not move_selected:
+            # Request button press from the hardware
+            button = self.hardware_command_listener.on_command("check_button", player_id=player_id)
+            
+            # If a button was pressed and it's valid
+            if button is not None and 1 <= button <= len(available_moves):
+                # Select the corresponding move
+                move_index = player.moves.index(available_moves[button-1])
+                success, message = player.use_move(move_index, opponent)
+                print(message)
+                move_selected = True
+            elif button is not None:
+                # Button press was invalid
+                print(self.state.narrator.invalid_choice())
 
-if __name__ == "__main__":
-    game = Game()
+    def play_victory_sound(self):
+        self.hardware_command_listener.on_command("play_audio", file_path="victory.mp3")

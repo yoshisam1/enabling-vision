@@ -1,6 +1,6 @@
 from enum import Enum
 import random
-from narrator import Narrator
+from .narrator import Narrator
 
 class Move:
     class MoveType(Enum):
