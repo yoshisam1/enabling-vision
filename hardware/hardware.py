@@ -146,13 +146,13 @@ class Hardware:
                 return "SELECT"
                 
             # Check for UP (potentiometer above threshold)
-            if potentio_reading > potentio_threshold + 150 and (current_time - last_input_time > debounce_time):
+            if potentio_reading > potentio_threshold + 450 and (current_time - last_input_time > debounce_time):
                 print(f"Player {player_id} pressed UP")
                 last_input_time = current_time
                 return "UP"
                 
             # Check for DOWN (potentiometer below threshold)
-            if potentio_reading < potentio_threshold - 150 and (current_time - last_input_time > debounce_time):
+            if potentio_reading < potentio_threshold - 450 and (current_time - last_input_time > debounce_time):
                 print(f"Player {player_id} pressed DOWN")
                 last_input_time = current_time
                 return "DOWN"

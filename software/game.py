@@ -1,6 +1,8 @@
 from enum import Enum
 from .character import Character
 from .narrator import Narrator
+import time  # Add this import at the top of the file
+
 class GameState:
     class Turn(Enum):
         NARRATOR = "narrator"
@@ -75,6 +77,10 @@ class Game:
                 # Confirm selection
                 selection_made = True
                 print(f"Player {player_id} selected: {class_options[current_selection]}")
+            
+            # Add delay after any input processing
+            if button is not None:
+                time.sleep(1)
         
         # Return the class number (1-based index)
         return current_selection + 1
@@ -162,6 +168,10 @@ class Game:
                 # Confirm selection
                 selection_made = True
                 print(f"Selected: {options[current_selection]}")
+            
+            # Add delay after any input processing
+            if button is not None:
+                time.sleep(1)
         
         # Return the selected index
         return current_selection
