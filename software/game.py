@@ -31,42 +31,62 @@ class Game:
         print("\nPlayer 1 setup:")
         self.state.player1 = Character("Player 1")
         
-        # Use hardware input for Player 1 character selection
-        print(self.state.narrator.request_character_selection())
-        class_selected = False
-        
-        while not class_selected:
-            # Request button press from Player 1
-            button = self.hardware_command_listener.on_command("check_button", player_id=1)
-            
-            # If a button was pressed and it's valid for character selection (1-3)
-            if button is not None and 1 <= button <= 3:
-                self.state.player1.select_character_class(button)
-                class_selected = True
-            elif button is not None:
-                # Button press was invalid
-                print(self.state.narrator.invalid_choice())
+        # Use menu navigation for Player 1 character selection
+        class_selected = self._navigate_character_select(1)
+        self.state.player1.select_character_class(class_selected)
         
         # Player 2 setup
         print("\nPlayer 2 setup:")
         self.state.player2 = Character("Player 2")
         
-        # Use hardware input for Player 2 character selection
-        print(self.state.narrator.request_character_selection())
-        class_selected = False
+        # Use menu navigation for Player 2 character selection
+        class_selected = self._navigate_character_select(2)
+        self.state.player2.select_character_class(class_selected)
+    
+    def _navigate_character_select(self, player_id):
+        """Use up/down navigation to select a character class"""
+        class_options = [
+            "Knight - Moderate health, high defense, low attack",
+            "Wizard - High health, low defense, moderate attack",
+            "Archer - Low health, moderate defense, high attack"
+        ]
         
-        while not class_selected:
-            # Request button press from Player 2
-            button = self.hardware_command_listener.on_command("check_button", player_id=2)
+        current_selection = 0
+        selection_made = False
+        
+        # Display initial options with highlighting
+        self._display_menu_options(class_options, current_selection, player_id)
+        
+        while not selection_made:
+            # Get navigation input
+            button = self.hardware_command_listener.on_command("check_button", player_id=player_id)
             
-            # Convert button to number if using qwerty mapping
-            # If a button was pressed and it's valid for character selection (1-3)
-            if button is not None and 1 <= button <= 3:
-                self.state.player2.select_character_class(button)
-                class_selected = True
-            elif button is not None:
-                # Button press was invalid
-                print(self.state.narrator.invalid_choice())
+            if button == "UP":
+                # Move selection up (wrapping around to bottom if needed)
+                current_selection = (current_selection - 1) % len(class_options)
+                self._display_menu_options(class_options, current_selection, player_id)
+                
+            elif button == "DOWN":
+                # Move selection down (wrapping around to top if needed)
+                current_selection = (current_selection + 1) % len(class_options)
+                self._display_menu_options(class_options, current_selection, player_id)
+                
+            elif button == "SELECT":
+                # Confirm selection
+                selection_made = True
+                print(f"Player {player_id} selected: {class_options[current_selection]}")
+        
+        # Return the class number (1-based index)
+        return current_selection + 1
+    
+    def _display_menu_options(self, options, selected_index, player_id):
+        """Display menu options with the selected one highlighted"""
+        print(f"\nPlayer {player_id}, choose your character class:")
+        for i, option in enumerate(options):
+            if i == selected_index:
+                print(f"→ {i+1}. {option} ←")  # Highlight with arrows
+            else:
+                print(f"  {i+1}. {option}")
     
     # This is where we request the hardware for input and output
     def battle(self):
@@ -101,36 +121,50 @@ class Game:
             print(self.state.narrator.announce_no_moves())
             return
         
-        print(self.state.narrator.show_available_moves(available_moves))
-        
         # Determine which player is active
         player_id = 1 if player == self.state.player1 else 2
         
-        # Get move choice using hardware_command_listener
-        print(self.state.narrator.request_move_choice())
-        move_selected = False
-
-        # if player_id == 1:
-        #     # Player 1 uses numeric keys 1-6
-        #     prompt = "Player 1: Press a button (1-6): "
-        # else:
-        #     # Player 2 uses qwerty
-        #     prompt = "Player 2: Press a button (q,w,e,r,t,y): "
+        # Use menu navigation for move selection
+        move_options = [f"{move.name} - {move.effect_description}" for move in available_moves]
+        selected_index = self._navigate_move_select(move_options, player_id)
         
-        while not move_selected:
-            # Request button press from the hardware
+        # Use the selected move
+        move_index = player.moves.index(available_moves[selected_index])
+        success, message = player.use_move(move_index, opponent)
+        print(message)
+    
+    def _navigate_move_select(self, options, player_id):
+        """Use up/down navigation to select a move"""
+        current_selection = 0
+        selection_made = False
+        
+        # Display initial options with highlighting
+        self._display_menu_options(options, current_selection, player_id)
+        print(self.state.narrator.request_move_choice())
+        
+        while not selection_made:
+            # Get navigation input
             button = self.hardware_command_listener.on_command("check_button", player_id=player_id)
             
-            # If a button was pressed and it's valid
-            if button is not None and 1 <= button <= len(available_moves):
-                # Select the corresponding move
-                move_index = player.moves.index(available_moves[button-1])
-                success, message = player.use_move(move_index, opponent)
-                print(message)
-                move_selected = True
-            elif button is not None:
-                # Button press was invalid
-                print(self.state.narrator.invalid_choice())
+            if button == "UP":
+                # Move selection up (wrapping around to bottom if needed)
+                current_selection = (current_selection - 1) % len(options)
+                self._display_menu_options(options, current_selection, player_id)
+                print(self.state.narrator.request_move_choice())
+                
+            elif button == "DOWN":
+                # Move selection down (wrapping around to top if needed)
+                current_selection = (current_selection + 1) % len(options)
+                self._display_menu_options(options, current_selection, player_id)
+                print(self.state.narrator.request_move_choice())
+                
+            elif button == "SELECT":
+                # Confirm selection
+                selection_made = True
+                print(f"Selected: {options[current_selection]}")
+        
+        # Return the selected index
+        return current_selection
 
     def play_victory_sound(self):
         self.hardware_command_listener.on_command("play_audio", file_path="victory.mp3")

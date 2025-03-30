@@ -19,24 +19,36 @@ class Hardware:
     # sample implementation
     def check_button(self, player_id):
         """Check if a button is pressed for the given player"""
+        if player_id == 1:
+            # Player 1 uses arrow keys and enter
+            prompt = "Player 1 controls: ↑(8), ↓(2), SELECT(5): "
+            up_key = "8"
+            down_key = "2" 
+            select_key = "5"
+        else:
+            # Player 2 uses WASD and space
+            prompt = "Player 2 controls: UP(w), DOWN(s), SELECT(e): "
+            up_key = "w"
+            down_key = "s"
+            select_key = "e"
             
         # Get input from user
-        key = input()
+        key = input(prompt)
         
         if player_id == 1:
-            # For Player 1 (numeric keys)
-            if key in "123456":
-                button_num = int(key)
-                print(f"Player 1 pressed button {button_num}")
-                return button_num
+            if key == up_key:
+                return "UP"
+            elif key == down_key:
+                return "DOWN"
+            elif key == select_key:
+                return "SELECT"
         else:
-            # For Player 2 (qwerty keys)
-            if key in "qwerty":
-                # Convert qwerty to 1-6
-                button_mapping = {"q": 1, "w": 2, "e": 3, "r": 4, "t": 5, "y": 6}
-                button_num = button_mapping[key]
-                print(f"Player 2 pressed button {button_num}")
-                return button_num
+            if key == up_key:
+                return "UP"
+            elif key == down_key:
+                return "DOWN"
+            elif key == select_key:
+                return "SELECT"
                 
         # Invalid key or no key pressed
         print("Invalid input!")
