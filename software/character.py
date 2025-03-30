@@ -55,35 +55,37 @@ class Character:
         self.last_damage_taken = 0
         self.last_element_used = None
 
-    def select_character_class(self):
-        print("\nChoose your character class:")
-        print("1. Knight - Moderate health, high defense, low attack")
-        print("2. Wizard - High health, low defense, moderate attack")
-        print("3. Archer - Low health, moderate defense, high attack")
-        
-        while True:
-            choice = input("\nEnter your choice (1-3): ")
-            if choice == "1":
-                self.character_class = CharacterClass.KNIGHT
-            elif choice == "2":
-                self.character_class = CharacterClass.WIZARD
-            elif choice == "3":
-                self.character_class = CharacterClass.ARCHER
-            else:
-                print("Invalid choice. Please try again.")
-                continue
+    def select_character_class(self, class_choice=None):
+        # If class_choice is provided (from on_command), use it directly
+        if class_choice is not None:
+            # Convert to int if it's not already
+            class_choice = int(class_choice)
             
-            self.initialize_character()
-            break
-
-    def initialize_character(self):
-            # Initialize character stats based on chosen class
+            if class_choice == 1:
+                self.character_class = CharacterClass.KNIGHT
+                print("Knight selected!")
+            elif class_choice == 2:
+                self.character_class = CharacterClass.WIZARD
+                print("Wizard selected!")
+            elif class_choice == 3:
+                self.character_class = CharacterClass.ARCHER
+                print("Archer selected!")
+            else:
+                print(f"Invalid choice: {class_choice}. Please try again.")
+                return False  # Return False to indicate selection failed
+            
+            # Initialize character stats
             self.health = self.character_class.value["health"]
             self.max_health = self.character_class.value["health"]
             self.defense = self.character_class.value["defense"]
             self.attack = self.character_class.value["attack"]
             self.moves = self.character_class.value["moves"].copy()
-
+            self.is_alive = True
+            self.last_damage_taken = 0
+            
+            return True  # Return True to indicate selection succeeded
+            
+        
     def take_damage(self, damage):
         """Reduce character's health by the specified damage amount"""
         self.health -= damage

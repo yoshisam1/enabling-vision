@@ -1,8 +1,6 @@
-from character import Character, CharacterClass
-from moves import Move
+from .character import Character, CharacterClass
 import random
 from collections import defaultdict
-import time
 
 class MoveTestSuite:
     def __init__(self):

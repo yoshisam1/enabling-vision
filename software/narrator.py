@@ -58,8 +58,17 @@ class Narrator:
     
     def request_move_choice(self) -> str:
         """Ask for move choice"""
-        return "\nChoose a move (enter the number): "
+        return "\nChoose a move (Player 1: 1-6, Player 2: q,w,e,r,t,y): "
     
     def invalid_number(self) -> str:
         """Narrate invalid number input"""
-        return "Please enter a number." 
+        return "Please enter a number."
+    
+    def request_character_selection(self):
+        return """\nChoose your character class:
+                    1. Knight - Moderate health, high defense, low attack
+                    2. Wizard - High health, low defense, moderate attack
+                    3. Archer - Low health, moderate defense, high attack"""
+    
+    def invalid_choice(self):
+        return "Invalid choice. Please try again." 

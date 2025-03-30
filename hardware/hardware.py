@@ -19,15 +19,9 @@ class Hardware:
     # sample implementation
     def check_button(self, player_id):
         """Check if a button is pressed for the given player"""
-        if player_id == 1:
-            # Player 1 uses numeric keys 1-6
-            prompt = "Player 1: Press a button (1-6): "
-        else:
-            # Player 2 uses qwerty
-            prompt = "Player 2: Press a button (q,w,e,r,t,y): "
             
         # Get input from user
-        key = input(prompt)
+        key = input()
         
         if player_id == 1:
             # For Player 1 (numeric keys)
