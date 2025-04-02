@@ -46,7 +46,7 @@ class Game:
         self.state.player2.select_character_class(class_selected)
     
     def _navigate_character_select(self, player_id):
-        """Use up/down navigation to select a character class"""
+        """Use single button navigation to select a character class"""
         class_options = [
             "Knight - Moderate health, high defense, low attack",
             "Wizard - High health, low defense, moderate attack",
@@ -58,20 +58,17 @@ class Game:
         
         # Display initial options with highlighting
         self._display_menu_options(class_options, current_selection, player_id)
+        print("Single press: Move Down, Double press: Select")
         
         while not selection_made:
             # Get navigation input
             button = self.hardware_command_listener.on_command("check_button", player_id=player_id)
             
-            if button == "UP":
-                # Move selection up (wrapping around to bottom if needed)
-                current_selection = (current_selection - 1) % len(class_options)
-                self._display_menu_options(class_options, current_selection, player_id)
-                
-            elif button == "DOWN":
+            if button == "DOWN":
                 # Move selection down (wrapping around to top if needed)
                 current_selection = (current_selection + 1) % len(class_options)
                 self._display_menu_options(class_options, current_selection, player_id)
+                print("Single press: Move Down, Double press: Select")
                 
             elif button == "SELECT":
                 # Confirm selection
@@ -82,7 +79,6 @@ class Game:
             if button is not None:
                 time.sleep(1)
         
-        # Return the class number (1-based index)
         return current_selection + 1
     
     def _display_menu_options(self, options, selected_index, player_id):
@@ -140,29 +136,25 @@ class Game:
         print(message)
     
     def _navigate_move_select(self, options, player_id):
-        """Use up/down navigation to select a move"""
+        """Use single button navigation to select a move"""
         current_selection = 0
         selection_made = False
         
         # Display initial options with highlighting
         self._display_menu_options(options, current_selection, player_id)
         print(self.state.narrator.request_move_choice())
+        print("Single press: Move Down, Double press: Select")
         
         while not selection_made:
             # Get navigation input
             button = self.hardware_command_listener.on_command("check_button", player_id=player_id)
             
-            if button == "UP":
-                # Move selection up (wrapping around to bottom if needed)
-                current_selection = (current_selection - 1) % len(options)
-                self._display_menu_options(options, current_selection, player_id)
-                print(self.state.narrator.request_move_choice())
-                
-            elif button == "DOWN":
+            if button == "DOWN":
                 # Move selection down (wrapping around to top if needed)
                 current_selection = (current_selection + 1) % len(options)
                 self._display_menu_options(options, current_selection, player_id)
                 print(self.state.narrator.request_move_choice())
+                print("Single press: Move Down, Double press: Select")
                 
             elif button == "SELECT":
                 # Confirm selection
@@ -173,7 +165,6 @@ class Game:
             if button is not None:
                 time.sleep(1)
         
-        # Return the selected index
         return current_selection
 
     def play_victory_sound(self):

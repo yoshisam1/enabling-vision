@@ -107,96 +107,71 @@ class Hardware:
             self.arduino.pwm_write(player_motor, 0)
 
     def check_button(self, player_id):
-        """Check for player input (UP/DOWN/SELECT)"""
+        """Check for player input (DOWN/SELECT) using single button with pattern detection"""
         if not self.hardware_enabled:
             # Fallback to keyboard input if hardware isn't available
             return self._check_button_keyboard(player_id)
             
         # Hardware-based input
-        if player_id == 1:
-            player_button = self.button_1_pin
-            player_potentio = self.potentio_1_pin
-        else:
-            player_button = self.button_2_pin
-            player_potentio = self.potentio_2_pin
-            
-        # Potentiometer center value (adjust if needed)
-        potentio_threshold = 512
+        player_button = self.button_1_pin if player_id == 1 else self.button_2_pin
+        
+        # Constants for double-click detection
+        DOUBLE_CLICK_WINDOW = 0.5  # seconds between clicks to count as double
+        DEBOUNCE_TIME = 0.05  # seconds to wait for button debounce
         
         # Give user some time to respond, but don't block indefinitely
         start_time = time.time()
-        last_potentio_reading = self.arduino.analog_read(player_potentio)[0]
-        
-        # Debounce variables
-        last_input = None
-        last_input_time = 0
-        debounce_time = 0.3  # seconds
+        last_press_time = 0
+        press_count = 0
         
         while (time.time() - start_time) < 5:  # 5 second timeout
-            # Check button (SELECT)
             button_state = self.arduino.digital_read(player_button)[0]
-            potentio_reading = self.arduino.analog_read(player_potentio)[0]
-            
             current_time = time.time()
             
-            # Check for SELECT (button press)
-            if button_state == 1 and (current_time - last_input_time > debounce_time):
-                print(f"Player {player_id} pressed SELECT")
-                last_input_time = current_time
-                return "SELECT"
+            if button_state == 1:  # Button is pressed
+                if current_time - last_press_time > DEBOUNCE_TIME:
+                    press_count += 1
+                    last_press_time = current_time
+                    
+                    # Wait a bit to avoid immediate re-triggering
+                    time.sleep(DEBOUNCE_TIME)
+                    
+                    # Wait briefly to see if there's a second press
+                    check_time = current_time
+                    while current_time - check_time < DOUBLE_CLICK_WINDOW:
+                        current_time = time.time()
+                        if self.arduino.digital_read(player_button)[0] == 1:
+                            if current_time - last_press_time > DEBOUNCE_TIME:
+                                # Double click detected
+                                print(f"Player {player_id} double-clicked (SELECT)")
+                                return "SELECT"
                 
-            # Check for UP (potentiometer above threshold)
-            if potentio_reading > potentio_threshold + 450 and (current_time - last_input_time > debounce_time):
-                print(f"Player {player_id} pressed UP")
-                last_input_time = current_time
-                return "UP"
+                    # If we get here, it was a single press
+                    print(f"Player {player_id} single-clicked (DOWN)")
+                    return "DOWN"
                 
-            # Check for DOWN (potentiometer below threshold)
-            if potentio_reading < potentio_threshold - 450 and (current_time - last_input_time > debounce_time):
-                print(f"Player {player_id} pressed DOWN")
-                last_input_time = current_time
-                return "DOWN"
-                
-            # Small delay to prevent CPU overuse
-            time.sleep(0.05)
+            time.sleep(0.05)  # Small delay to prevent CPU overuse
             
-        # If we reach here, no input was detected
         return None
-        
+
     def _check_button_keyboard(self, player_id):
-        """Fallback keyboard input method"""
+        """Fallback keyboard input method for single-button setup"""
         if player_id == 1:
-            # Player 1 uses arrow keys and enter
-            prompt = "Player 1 controls: ↑(8), ↓(2), SELECT(5): "
-            up_key = "8"
-            down_key = "2" 
+            prompt = "Player 1 controls: Single press(2), Double press(5): "
+            down_key = "2"
             select_key = "5"
         else:
-            # Player 2 uses WASD and space
-            prompt = "Player 2 controls: UP(w), DOWN(s), SELECT(e): "
-            up_key = "w"
+            prompt = "Player 2 controls: Single press(s), Double press(e): "
             down_key = "s"
             select_key = "e"
             
-        # Get input from user
         key = input(prompt)
         
-        if player_id == 1:
-            if key == up_key:
-                return "UP"
-            elif key == down_key:
-                return "DOWN"
-            elif key == select_key:
-                return "SELECT"
-        else:
-            if key == up_key:
-                return "UP"
-            elif key == down_key:
-                return "DOWN"
-            elif key == select_key:
-                return "SELECT"
-                
-        # Invalid key or no key pressed
+        if key == down_key:
+            return "DOWN"
+        elif key == select_key:
+            return "SELECT"
+            
         print("Invalid input!")
         return None
         
