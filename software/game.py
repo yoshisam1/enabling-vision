@@ -69,28 +69,41 @@ class Game:
         current_selection = 0
         selection_made = False
         
-        # Display initial options with highlighting
+        # Play initial character info
+        char_info_voice = SoundEffects.get_voice_line("knight_info")
+        if char_info_voice:
+            self.hardware_command_listener.on_command("play_audio", file_path=char_info_voice)
+            time.sleep(0.5)
+        
         self._display_menu_options(class_options, current_selection, player_id)
         print("Single press: Move Down, Double press: Select")
         
         while not selection_made:
-            # Get navigation input
             button = self.hardware_command_listener.on_command("check_button", player_id=player_id)
             
             if button == "DOWN":
-                # Move selection down (wrapping around to top if needed)
                 current_selection = (current_selection + 1) % len(class_options)
                 self._display_menu_options(class_options, current_selection, player_id)
                 print("Single press: Move Down, Double press: Select")
                 
+                # Play character info voiceover for the selected class
+                if current_selection == 0:
+                    char_info_voice = SoundEffects.get_voice_line("knight_info")
+                elif current_selection == 1:
+                    char_info_voice = SoundEffects.get_voice_line("wizard_info")
+                else:
+                    char_info_voice = SoundEffects.get_voice_line("archer_info")
+                
+                if char_info_voice:
+                    self.hardware_command_listener.on_command("play_audio", file_path=char_info_voice)
+                    time.sleep(0.5)
+                
             elif button == "SELECT":
-                # Confirm selection
                 selection_made = True
                 print(f"Player {player_id} selected: {class_options[current_selection]}")
             
-            # Add delay after any input processing
             if button is not None:
-                time.sleep(1)
+                time.sleep(0.1)
         
         return current_selection + 1
     
