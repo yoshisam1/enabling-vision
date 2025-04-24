@@ -9,7 +9,13 @@ class Narrator:
     def play_voice_line(self, line_name: str) -> None:
         """Play a voice line if sound is enabled"""
         if self.sound_enabled:
-            voice_line = SoundEffects.get_voice_line(line_name)
+            # Handle moveset descriptions
+            if line_name in ["boulder_smash", "inferno_counter", "lava_strike", "earthen_tremor", "magma_punch", "rock_breaker",
+                           "flame_surge", "hydro_blast", "ember_wave", "steam_burst", "volcanic_surge", "tidal_crash",
+                           "flame_arrow", "piercing_shot", "searing_volley", "rock_barrage", "explosive_shot", "sharpened_quake"]:
+                voice_line = SoundEffects.get_voice_line(line_name)
+            else:
+                voice_line = SoundEffects.get_voice_line(line_name)
             if voice_line:
                 self.hardware_command_listener.on_command("play_audio", file_path=voice_line)
     
@@ -122,4 +128,25 @@ class Narrator:
     def announce_victory(self, winner_name: str) -> None:
         """Announce victory and play victory sound"""
         player_id = 1 if "1" in winner_name else 2
-        self.play_victory_sound(player_id) 
+        self.play_victory_sound(player_id)
+    
+    def play_knight_move_description(self, move_name: str) -> None:
+        """Play a Knight move description if sound is enabled"""
+        if self.sound_enabled:
+            voice_line = SoundEffects.get_voice_line(move_name)
+            if voice_line:
+                self.hardware_command_listener.on_command("play_audio", file_path=voice_line)
+    
+    def play_wizard_move_description(self, move_name: str) -> None:
+        """Play a Wizard move description if sound is enabled"""
+        if self.sound_enabled:
+            voice_line = SoundEffects.get_voice_line(move_name)
+            if voice_line:
+                self.hardware_command_listener.on_command("play_audio", file_path=voice_line)
+    
+    def play_archer_move_description(self, move_name: str) -> None:
+        """Play an Archer move description if sound is enabled"""
+        if self.sound_enabled:
+            voice_line = SoundEffects.get_voice_line(move_name)
+            if voice_line:
+                self.hardware_command_listener.on_command("play_audio", file_path=voice_line) 

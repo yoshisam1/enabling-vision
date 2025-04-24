@@ -53,6 +53,8 @@ class Game:
         selection_made = False
         
         # Play initial character info
+        self.state.narrator.play_voice_line(f"player{player_id}")
+        self.state.narrator.play_voice_line("choose_character")
         self.state.narrator.announce_character_info("knight")
         
         self._display_menu_options(class_options, current_selection, player_id)
@@ -143,14 +145,21 @@ class Game:
         print(self.state.narrator.request_move_choice())
         print("Single press: Move Down, Double press: Select")
         
+        # Play initial move description
+        move_name = options[current_selection].split(" - ")[0].lower().replace(" ", "_")
+        self.state.narrator.play_voice_line(move_name)
+        
         while not selection_made:
             button = self.hardware_command_listener.on_command("check_button", player_id=player_id)
             
             if button == "DOWN":
                 current_selection = (current_selection + 1) % len(options)
                 self._display_menu_options(options, current_selection, player_id)
-                print(self.state.narrator.request_move_choice())
                 print("Single press: Move Down, Double press: Select")
+                
+                # Play move description voiceover for the selected move
+                move_name = options[current_selection].split(" - ")[0].lower().replace(" ", "_")
+                self.state.narrator.play_voice_line(move_name)
                 
             elif button == "SELECT":
                 selection_made = True
