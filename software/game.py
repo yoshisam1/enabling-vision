@@ -1,6 +1,7 @@
 from enum import Enum
 from .character import Character
 from .narrator import Narrator
+from .sound_effects import SoundEffects
 import time  # Add this import at the top of the file
 
 class GameState:
@@ -31,19 +32,31 @@ class Game:
     def setup_players(self):
         # Player 1 setup
         print("\nPlayer 1 setup:")
+        self._play_player_setup_voiceovers(1)
         self.state.player1 = Character("Player 1")
-        
-        # Use menu navigation for Player 1 character selection
         class_selected = self._navigate_character_select(1)
         self.state.player1.select_character_class(class_selected)
         
         # Player 2 setup
         print("\nPlayer 2 setup:")
+        self._play_player_setup_voiceovers(2)
         self.state.player2 = Character("Player 2")
-        
-        # Use menu navigation for Player 2 character selection
         class_selected = self._navigate_character_select(2)
         self.state.player2.select_character_class(class_selected)
+    
+    def _play_player_setup_voiceovers(self, player_id):
+        """Play voiceovers for player setup"""
+        # Play player number voiceover
+        player_voice = SoundEffects.get_voice_line(f"player{player_id}")
+        if player_voice:
+            self.hardware_command_listener.on_command("play_audio", file_path=player_voice)
+            time.sleep(0.5)
+        
+        # Play choose character voiceover
+        choose_char_voice = SoundEffects.get_voice_line("choose_character")
+        if choose_char_voice:
+            self.hardware_command_listener.on_command("play_audio", file_path=choose_char_voice)
+            time.sleep(0.5)
     
     def _navigate_character_select(self, player_id):
         """Use single button navigation to select a character class"""
