@@ -143,14 +143,24 @@ class Game:
         print(self.state.narrator.announce_turn(player.name))
         print(player)
         
+        # Play player number voiceover
+        player_id = 1 if player == self.state.player1 else 2
+        player_voice = SoundEffects.get_voice_line(f"player{player_id}")
+        if player_voice:
+            self.hardware_command_listener.on_command("play_audio", file_path=player_voice)
+            time.sleep(0.5)
+        
+        # Play choose move voiceover
+        choose_move_voice = SoundEffects.get_voice_line("choose_move")
+        if choose_move_voice:
+            self.hardware_command_listener.on_command("play_audio", file_path=choose_move_voice)
+            time.sleep(0.5)
+        
         # Show available moves
         available_moves = player.get_available_moves()
         if not available_moves:
             print(self.state.narrator.announce_no_moves())
             return
-        
-        # Determine which player is active
-        player_id = 1 if player == self.state.player1 else 2
         
         # Use menu navigation for move selection
         move_options = [f"{move.name} - {move.effect_description}" for move in available_moves]
