@@ -1,12 +1,50 @@
 from typing import Optional
+from .sound_effects import SoundEffects
 
 class Narrator:
-    def __init__(self):
-        self.sound_enabled = False  # For future sound implementation
+    def __init__(self, hardware_command_listener=None):
+        self.hardware_command_listener = hardware_command_listener
+        self.sound_enabled = hardware_command_listener is not None
+    
+    def play_voice_line(self, line_name: str) -> None:
+        """Play a voice line if sound is enabled"""
+        if self.sound_enabled:
+            voice_line = SoundEffects.get_voice_line(line_name)
+            if voice_line:
+                self.hardware_command_listener.on_command("play_audio", file_path=voice_line)
+    
+    def play_move_sound(self, move_name: str) -> None:
+        """Play a move sound effect if sound is enabled"""
+        if self.sound_enabled:
+            move_sound = SoundEffects.get_move_sound(move_name)
+            if move_sound:
+                self.hardware_command_listener.on_command("play_audio", file_path=move_sound)
+    
+    def play_super_effective_sound(self) -> None:
+        """Play super effective sound if sound is enabled"""
+        if self.sound_enabled:
+            sound = SoundEffects.get_super_effective_sound()
+            if sound:
+                self.hardware_command_listener.on_command("play_audio", file_path=sound)
+    
+    def play_stat_change_sound(self, player_id: int, stat: str, is_increase: bool) -> None:
+        """Play stat change sound if sound is enabled"""
+        if self.sound_enabled:
+            sound = SoundEffects.get_stat_change_sound(player_id, stat, is_increase)
+            if sound:
+                self.hardware_command_listener.on_command("play_audio", file_path=sound)
+    
+    def play_victory_sound(self, player_id: int) -> None:
+        """Play victory sound if sound is enabled"""
+        if self.sound_enabled:
+            sound = SoundEffects.get_victory_sound(player_id)
+            if sound:
+                self.hardware_command_listener.on_command("play_audio", file_path=sound)
     
     def announce_move(self, user_name: str, move_name: str, roll: int,
                      damage: int, formula: Optional[str] = None, effects: Optional[str] = None) -> str:
         """Narrate a move being used"""
+        self.play_move_sound(move_name)
         message = f"{user_name} used {move_name}! (Rolled {roll})"
         if effects:
             message += f" {effects}"
@@ -39,10 +77,13 @@ class Narrator:
     
     def announce_super_effective(self) -> str:
         """Narrate when a move is super effective"""
+        self.play_super_effective_sound()
         return "(Super Effective!)"
     
     def announce_turn(self, player_name: str) -> str:
         """Narrate the start of a turn"""
+        player_id = 1 if "1" in player_name else 2
+        self.play_voice_line(f"player{player_id}")
         return f"\n{player_name}'s turn!"
     
     def show_available_moves(self, moves: list) -> str:
@@ -58,17 +99,27 @@ class Narrator:
     
     def request_move_choice(self) -> str:
         """Ask for move choice"""
+        self.play_voice_line("choose_move")
         return "\nChoose a move (Player 1: 1-6, Player 2: q,w,e,r,t,y): "
     
     def invalid_number(self) -> str:
         """Narrate invalid number input"""
         return "Please enter a number."
     
-    def request_character_selection(self):
+    def request_character_selection(self, player_id: int) -> str:
+        """Request character selection and play appropriate voice lines"""
+        self.play_voice_line(f"player{player_id}")
+        self.play_voice_line("choose_character")
         return """\nChoose your character class:
                     1. Knight - Moderate health, high defense, low attack
                     2. Wizard - High health, low defense, moderate attack
                     3. Archer - Low health, moderate defense, high attack"""
     
-    def invalid_choice(self):
-        return "Invalid choice. Please try again." 
+    def announce_character_info(self, character_class: str) -> None:
+        """Play character class information voice line"""
+        self.play_voice_line(f"{character_class.lower()}_info")
+    
+    def announce_victory(self, winner_name: str) -> None:
+        """Announce victory and play victory sound"""
+        player_id = 1 if "1" in winner_name else 2
+        self.play_victory_sound(player_id) 
