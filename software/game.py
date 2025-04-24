@@ -77,6 +77,7 @@ class Game:
                     self.state.narrator.announce_character_info("archer")
                 
             elif button == "SELECT":
+                self.state.narrator.play_select_sound()
                 selection_made = True
                 print(f"Player {player_id} selected: {class_options[current_selection]}")
             
@@ -162,6 +163,7 @@ class Game:
                 self.state.narrator.play_voice_line(move_name)
                 
             elif button == "SELECT":
+                self.state.narrator.play_select_sound()
                 selection_made = True
                 print(f"Selected: {options[current_selection]}")
             

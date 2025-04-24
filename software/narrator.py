@@ -149,4 +149,11 @@ class Narrator:
         if self.sound_enabled:
             voice_line = SoundEffects.get_voice_line(move_name)
             if voice_line:
-                self.hardware_command_listener.on_command("play_audio", file_path=voice_line) 
+                self.hardware_command_listener.on_command("play_audio", file_path=voice_line)
+    
+    def play_select_sound(self) -> None:
+        """Play the select sound effect if sound is enabled"""
+        if self.sound_enabled:
+            sound = SoundEffects.get_ui_sound("select")
+            if sound:
+                self.hardware_command_listener.on_command("play_audio", file_path=sound) 
