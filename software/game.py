@@ -115,7 +115,23 @@ class Game:
         
         # Battle ended
         winner = self.state.player1 if self.state.player1.is_alive else self.state.player2
-        self.state.narrator.announce_victory(winner.name)
+        self.state.narrator.play_voice_line(f"player{1 if winner == self.state.player1 else 2}_win")
+        
+        # Ask if players want to restart
+        print("\nGame Over! Would you like to play again?")
+        print("Press SELECT to restart, or any other button to exit.")
+        self.state.narrator.play_voice_line("play_again")
+        
+        while True:
+            button = self.hardware_command_listener.on_command("check_button", player_id=1)
+            if button == "SELECT":
+                self.state = GameState()  # Reset game state
+                self.state.narrator = Narrator(self.hardware_command_listener)
+                self.run()  # Restart the game
+                break
+            elif button is not None:
+                exit()  # Exit if any other button is pressed
+            time.sleep(0.1)
 
     def player_turn(self, player, opponent):
         print(self.state.narrator.announce_turn(player.name))
