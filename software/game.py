@@ -134,11 +134,22 @@ class Game:
         
         # Use the selected move
         move_index = player.moves.index(available_moves[selected_index])
+        selected_move = player.moves[move_index]
+        
+        # Play the move's sound effect based on its element type
+        self.state.narrator.play_move_sound(selected_move.move_type.value)
+        
+        # Use the move
         success, message = player.use_move(move_index, opponent)
         print(message)
+        
+        # If the move was super effective, play the super effective sound
+        #if Move.is_super_effective(selected_move.move_type, opponent.last_element_used):
+        #   self.state.narrator.play_super_effective_sound()
     
     def _navigate_move_select(self, options, player_id):
-        """Use single button navigation to select a move"""
+        """Use single 
+button navigation to select a move"""
         current_selection = 0
         selection_made = False
         
