@@ -149,6 +149,18 @@ class Game:
             self.state.narrator.play_super_effective_sound()
         else:
             self.state.narrator.play_move_sound("normal_hit")  # Use play_move_sound for normal hits
+            
+        # Play stat change sounds if applicable
+        if "attack" in message:
+            if "raised" in message or "increased" in message:
+                self.state.narrator.play_stat_change_sound(player_id, "attack", True)
+            elif "lowered" in message or "decreased" in message:
+                self.state.narrator.play_stat_change_sound(3 - player_id, "attack", False)
+        elif "defense" in message:
+            if "raised" in message or "increased" in message:
+                self.state.narrator.play_stat_change_sound(player_id, "defense", True)
+            elif "lowered" in message or "decreased" in message:
+                self.state.narrator.play_stat_change_sound(3 - player_id, "defense", False)
     
     def _navigate_move_select(self, options, player_id):
         """Use single button navigation to select a move"""

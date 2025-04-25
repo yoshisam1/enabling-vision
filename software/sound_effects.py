@@ -238,7 +238,9 @@ class SoundEffects:
             "water": "water",
             "earth": "earth",
             "normal": "normal",
-            "super_effective_hit": "super_effective"
+            "super_effective_hit": "super_effective",
+            "stat_up" : "stat_up",
+            "stat_down" : "stat_down"
         }
         
         # Try to get the specific sound for the move type
