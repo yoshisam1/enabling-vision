@@ -47,7 +47,7 @@ class SoundEffects:
             "player1": os.path.join(VOICE_ACTORS_DIR, "Player 1.mp3"),
             "player2": os.path.join(VOICE_ACTORS_DIR, "Player 2.mp3"),
             "deals": os.path.join(VOICE_ACTORS_DIR, "deals.mp3"),
-            "damage": os.path.join(VOICE_ACTORS_DIR, "Damage.mp3"),
+            "damage": os.path.join(VOICE_ACTORS_DIR, "damage.mp3"),
             "rolled_a": os.path.join(VOICE_ACTORS_DIR, "Rolled a.mp3"),
             "player1_win": os.path.join(VOICE_ACTORS_DIR, "Player 1 Wins.mp3"),
             "player2_win": os.path.join(VOICE_ACTORS_DIR, "Player 2 Wins.mp3"),

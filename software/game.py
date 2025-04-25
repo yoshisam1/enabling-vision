@@ -143,6 +143,37 @@ class Game:
         success, message = player.use_move(move_index, opponent)
         print(message)
         
+        # If move failed due to no energy, play not enough energy voiceover
+        if not success and "no uses left" in message:
+            self.state.narrator.play_voice_line("not_enough_energy")
+            return
+            
+        # Play attack outcome voiceover sequence
+        if success:
+            # Play player number
+            self.state.narrator.play_voice_line(f"player{player_id}")
+            
+            # Extract and play roll
+            if "Rolled" in message:
+                roll_text = message.split("Rolled")[1].split(")")[0].strip()
+                try:
+                    roll = int(roll_text)
+                    self.state.narrator.play_voice_line("rolled_a")
+                    self.state.narrator.play_number(roll)
+                except ValueError:
+                    pass
+            
+            # Play deals and damage
+            if "Dealt" in message:
+                damage_text = message.split("Dealt")[1].split("damage")[0].strip()
+                try:
+                    damage = int(damage_text)
+                    self.state.narrator.play_voice_line("deals")
+                    self.state.narrator.play_number(damage)
+                    self.state.narrator.play_voice_line("damage")
+                except ValueError:
+                    pass
+            
         # Play appropriate hit sound based on effectiveness
         if selected_move.is_super_effective(selected_move.move_type, opponent.last_element_used):
             self.state.narrator.play_move_sound("super_effective_hit")

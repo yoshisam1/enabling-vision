@@ -19,6 +19,13 @@ class Narrator:
             if voice_line:
                 self.hardware_command_listener.on_command("play_audio", file_path=voice_line)
     
+    def play_number(self, number: int) -> None:
+        """Play a number sound if sound is enabled"""
+        if self.sound_enabled:
+            number_sound = SoundEffects.get_number_sound(number)
+            if number_sound:
+                self.hardware_command_listener.on_command("play_audio", file_path=number_sound)
+    
     def play_move_sound(self, move_name: str) -> None:
         """Play a move sound effect if sound is enabled"""
         if self.sound_enabled:
