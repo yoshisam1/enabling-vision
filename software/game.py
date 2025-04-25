@@ -153,13 +153,17 @@ class Game:
         # Play stat change sounds if applicable
         if "attack" in message:
             if "raised" in message or "increased" in message:
+                self.state.narrator.play_move_sound("stat_up")
                 self.state.narrator.play_stat_change_sound(player_id, "attack", True)
             elif "lowered" in message or "decreased" in message:
+                self.state.narrator.play_move_sound("stat_down")
                 self.state.narrator.play_stat_change_sound(3 - player_id, "attack", False)
         elif "defense" in message:
             if "raised" in message or "increased" in message:
+                self.state.narrator.play_move_sound("stat_up")
                 self.state.narrator.play_stat_change_sound(player_id, "defense", True)
             elif "lowered" in message or "decreased" in message:
+                self.state.narrator.play_move_sound("stat_down")
                 self.state.narrator.play_stat_change_sound(3 - player_id, "defense", False)
     
     def _navigate_move_select(self, options, player_id):
