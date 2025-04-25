@@ -88,7 +88,7 @@ class Game:
     
     def _display_menu_options(self, options, selected_index, player_id):
         """Display menu options with the selected one highlighted"""
-        print(f"\nPlayer {player_id}, choose your character class:")
+        print(f"\nPlayer {player_id}, choose your character class / move:")
         for i, option in enumerate(options):
             if i == selected_index:
                 print(f"→ {i+1}. {option} ←")  # Highlight with arrows
@@ -143,13 +143,15 @@ class Game:
         success, message = player.use_move(move_index, opponent)
         print(message)
         
-        # If the move was super effective, play the super effective sound
-        #if Move.is_super_effective(selected_move.move_type, opponent.last_element_used):
-        #   self.state.narrator.play_super_effective_sound()
+        # Play appropriate hit sound based on effectiveness
+        if selected_move.is_super_effective(selected_move.move_type, opponent.last_element_used):
+            self.state.narrator.play_move_sound("super_effective_hit")
+            self.state.narrator.play_super_effective_sound()
+        else:
+            self.state.narrator.play_move_sound("normal_hit")  # Use play_move_sound for normal hits
     
     def _navigate_move_select(self, options, player_id):
-        """Use single 
-button navigation to select a move"""
+        """Use single button navigation to select a move"""
         current_selection = 0
         selection_made = False
         
